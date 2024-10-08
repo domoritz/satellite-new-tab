@@ -1,6 +1,6 @@
 {
   "name": "himawari",
-  "version": "0.21.0",
+  "version": "0.22.0",
   "description": "Experience the latest image from the Himawari 8 satellite every time you open a new tab in Chrome or Firefox.",
   "main": "bundle.js",
   "dependencies": {
@@ -23,7 +23,7 @@
     "postinstall": "cp node_modules/webextension-polyfill/dist/browser-polyfill.* lib",
     "build": "rollup -c",
     "watch": "rollup -w -c",
-    "start": "python -m http.server",
+    "start": "python3 -m http.server",
     "prebundle": "npm run build",
     "bundle": "npm run bundle:firefox && npm run bundle:chrome && npm run bundle:src",
     "bundle:chrome": "cp manifest.chrome.json manifest.json && zip himawari_chrome.zip lib/* icons/*.png index.html style.css bundle.js bundle.js.map options.js options.html Roboto_Slab/*.ttf manifest.json",

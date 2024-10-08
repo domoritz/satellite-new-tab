@@ -20,14 +20,19 @@ const DSCOVR_EPIC = "EPIC";
 const DSCOVR_EPIC_ENHANCED = "EPIC_ENHANCED";
 const GOES_16 = "GOES_16";
 const GOES_16_NATURAL = "GOES_16_NATURAL";
-const GOES_17 = "GOES_17";
-const GOES_17_NATURAL = "GOES_17_NATURAL";
+const GOES_18 = "GOES_18";
+const GOES_18_NATURAL = "GOES_18_NATURAL";
+const GOES_19 = "GOES_19";
+const GOES_19_NATURAL = "GOES_19_NATURAL";
 const METEOSAT = "METEOSAT";
 const METEOSAT_IODC = "METEOSAT_IODC";
+const HIMAWARI_9 = "HIMAWARI_9";
 
 type ImageType = typeof INFRARED | typeof VISIBLE_LIGHT | typeof DSCOVR_EPIC |
-  typeof DSCOVR_EPIC_ENHANCED | typeof GOES_16 | typeof GOES_16_NATURAL | typeof GOES_17 | typeof GOES_17_NATURAL |
-  typeof METEOSAT | typeof METEOSAT_IODC;
+  typeof DSCOVR_EPIC_ENHANCED |
+  typeof GOES_16 | typeof GOES_16_NATURAL | typeof GOES_18 | typeof GOES_18_NATURAL | typeof GOES_19 | typeof GOES_19_NATURAL |
+  typeof METEOSAT | typeof METEOSAT_IODC |
+  typeof HIMAWARI_9;
 
 const HIMAWARI_WIDTH = 550;
 const HIMAWARI_BLOCK_SIZES = [1, 4, 8, 16, 20];
@@ -63,21 +68,6 @@ interface Tile {
   x: number;
   y: number;
   url: string;
-}
-
-/**
- * Create a cached URL thanks to our friends at Google.
- * See https://gist.github.com/carlo/5379498
- *
- * Default caching is 5 days, in seconds
- */
-function getCachedUrl(url: string, cache = 5 * 24 * 60 * 60) {
-  if (isExtension) {
-    // don't use cache in the extension
-    return url;
-  } else {
-    return `https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?url=${url}&container=focus&refresh=${cache}`;
-  }
 }
 
 /**
@@ -118,7 +108,7 @@ function himawariURLs(options: {date: Date; type?: ImageType; blocks: number}) {
       const url = `${tilesURL}_${x}_${y}.png`;
 
       tiles.push({
-        url: getCachedUrl(url),
+        url,
         x,
         y,
       });
@@ -141,21 +131,27 @@ function sliderURLs(options: {date: Date; type: ImageType; blocks: number; level
   const typePath = {
     GOES_16: "geocolor",
     GOES_16_NATURAL: "natural_color",
-    GOES_17: "geocolor",
-    GOES_17_NATURAL: "natural_color",
+    GOES_18: "geocolor",
+    GOES_18_NATURAL: "natural_color",
+    GOES_19: "geocolor",
+    GOES_19_NATURAL: "natural_color",
+    HIMAWARI_9: "geocolor",
   }[options.type];
 
   const which = {
-    GOES_16: 16,
-    GOES_16_NATURAL: 16,
-    GOES_17: 17,
-    GOES_17_NATURAL: 17,
+    GOES_16: "goes-16",
+    GOES_16_NATURAL: "goes-16",
+    GOES_18: "goes-17",
+    GOES_18_NATURAL: "goes-17",
+    GOES_19: "goes-19",
+    GOES_19_NATURAL: "goes-19",
+    HIMAWARI_9: "himawari",
   }[options.type];
 
   const formattedDate = utcFormat("%Y/%m/%d")(options.date);
   const formattedDateTime = utcFormat("%Y%m%d%H%M%S")(options.date);
 
-  const tilesURL = `${SLIDER_BASE_URL}imagery/${formattedDate}/goes-${which}---full_disk/${typePath}/${formattedDateTime}/`;
+  const tilesURL = `${SLIDER_BASE_URL}imagery/${formattedDate}/${which}---full_disk/${typePath}/${formattedDateTime}/`;
   const tiles: Tile[] = [];
 
   for (let y = 0; y < blocks; y++) {
@@ -163,7 +159,7 @@ function sliderURLs(options: {date: Date; type: ImageType; blocks: number; level
       const url = `${tilesURL}${pad(level, 2)}/${pad(y, 3)}_${pad(x, 3)}.png`;
 
       tiles.push({
-        url: getCachedUrl(url),
+        url,
         x,
         y,
       });
@@ -203,15 +199,25 @@ async function getLatestDscovrDate(imageType: ImageType) {
   }
 }
 
+function sliderProxy(url: string) {
+  if (isExtension) {
+    return url;
+  }
+  return `https://slider-proxy.domoritz.workers.dev/?${encodeURIComponent(url)}`;
+}
+
 async function getLatestSliderDate(imageType: ImageType) {
   const which = {
-    GOES_16: 16,
-    GOES_16_NATURAL: 16,
-    GOES_17: 17,
-    GOES_17_NATURAL: 17,
+    GOES_16: "goes-16",
+    GOES_16_NATURAL: "goes-16",
+    GOES_18: "goes-17",
+    GOES_18_NATURAL: "goes-17",
+    GOES_19: "goes-19",
+    GOES_19_NATURAL: "goes-19",
+    HIMAWARI_9: "himawari",
   }[imageType];
 
-  const raw = await fetch(`${SLIDER_BASE_URL}json/goes-${which}/full_disk/geocolor/latest_times.json`);
+  const raw = await fetch(sliderProxy(`${SLIDER_BASE_URL}json/${which}/full_disk/geocolor/latest_times.json`));
   const data: {timestamps_int: string[]} = await raw.json();
 
   return utcParse("%Y%m%d%H%M%S")(data.timestamps_int[0]);
@@ -297,6 +303,7 @@ function setBodyClass(imageType: ImageType) {
   switch (imageType) {
     case INFRARED:
     case VISIBLE_LIGHT:
+    case HIMAWARI_9:
       document.body.classList.add("himawari");
       break;
     case DSCOVR_EPIC:
@@ -305,8 +312,10 @@ function setBodyClass(imageType: ImageType) {
       break;
     case GOES_16:
     case GOES_16_NATURAL:
-    case GOES_17:
-    case GOES_17_NATURAL:
+    case GOES_18:
+    case GOES_18_NATURAL:
+    case GOES_19:
+    case GOES_19_NATURAL:
       document.body.classList.add("goes");
       break;
     case METEOSAT:
@@ -452,7 +461,7 @@ function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageTyp
   const type = imageType === DSCOVR_EPIC_ENHANCED ? "enhanced" : "natural";
   const month = pad(latest.date.getMonth() + 1, 2);
   const date = pad(latest.date.getDate(), 2);
-  img.src = getCachedUrl(`${DSCOVR_BASE_URL}archive/${type}/${latest.date.getFullYear()}/${month}/${date}/png/${latest.image}.png`);
+  img.src = `${DSCOVR_BASE_URL}archive/${type}/${latest.date.getFullYear()}/${month}/${date}/png/${latest.image}.png`;
 }
 
 function setSliderImages(date: Date, imageType: ImageType) {
@@ -492,7 +501,7 @@ function setSliderImages(date: Date, imageType: ImageType) {
         ctx.drawImage(img, tile.x * SLIDER_WIDTH, tile.y * SLIDER_WIDTH, SLIDER_WIDTH, SLIDER_WIDTH);
         resolve();
       };
-      img.src = tile.url;
+      img.src = sliderProxy(tile.url);
     });
   }
 
@@ -554,7 +563,7 @@ function setMeteosatImages(latest: {date: Date; image: string}, imageType: Image
     storeCanvas(latest.date, imageType);
   };
 
-  img.src = getCachedUrl(latest.image);
+  img.src = latest.image;
 }
 
 /* Load latest image(s) date and images for that date */
@@ -576,8 +585,10 @@ async function setLatestImage() {
         break;
       case GOES_16:
       case GOES_16_NATURAL:
-      case GOES_17:
-      case GOES_17_NATURAL:
+      case GOES_18:
+      case GOES_18_NATURAL:
+      case GOES_19:
+      case GOES_19_NATURAL:
         setSliderImages(await getLatestSliderDate(imageType), imageType);
         break;
       case METEOSAT:
@@ -586,13 +597,16 @@ async function setLatestImage() {
         break;
       case INFRARED:
       case VISIBLE_LIGHT:
-      default:
         setHimawariImages(await getLatestHimawariDate(imageType), imageType)
+        break;
+      case HIMAWARI_9:
+      default:
+        setSliderImages(await getLatestSliderDate(imageType), imageType)
         break;
     }
   } else {
     // if we are not in the extension, let's always load visible light
-    setHimawariImages(await getLatestHimawariDate(VISIBLE_LIGHT), VISIBLE_LIGHT)
+    setSliderImages(await getLatestSliderDate(HIMAWARI_9), HIMAWARI_9)
   }
 }
 
@@ -669,8 +683,11 @@ document.getElementById("explore").addEventListener("click", () => {
       break;
     case GOES_16:
     case GOES_16_NATURAL:
-    case GOES_17:
-    case GOES_17_NATURAL:
+    case GOES_18:
+    case GOES_18_NATURAL:
+    case GOES_19:
+    case GOES_19_NATURAL:
+    case HIMAWARI_9:
       window.open(SLIDER_EXPLORER, "_self");
       break;
     case INFRARED:

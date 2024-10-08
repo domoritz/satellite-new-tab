@@ -1,6 +1,6 @@
-# 🛰 Himawari 8 New Tab Page (Chrome and Firefox)
+# 🛰 Satellite New Tab Page (Chrome and Firefox)
 
-Experience the latest image taken by the [geostationary](https://en.wikipedia.org/wiki/Geostationary_orbit) [Himawari 8 satellite](http://himawari8.nict.go.jp/) every time you open a new tab in Chrome or Firefox. The Himawari satellite has been deployed by the [Japan Meteorological Agency](http://www.jma.go.jp/jma/indexe.html) and takes photographs of Earth every 10 minutes. Since the new tab page is a simple web page, you can also [try it online](https://domoritz.github.io/himawari-8-chrome).
+Experience the latest image taken by the [geostationary](https://en.wikipedia.org/wiki/Geostationary_orbit) [Himawari satellites](https://en.wikipedia.org/wiki/Himawari_(satellites)) every time you open a new tab in Chrome or Firefox. The Himawari satellites have been deployed by the [Japan Meteorological Agency](http://www.jma.go.jp/jma/indexe.html) and takes photographs of Earth every 10 minutes. Since the new tab page is a simple web page, you can also [try it online](https://domoritz.github.io/himawari-8-chrome).
 
 **The browser extension supports multiple satellites: Himawari, GOES, Meteosat, and DSCOVR.**
 
@@ -38,7 +38,7 @@ This extension is inspired by https://glittering.blue/, https://github.com/jakie
 
 ## Features of the extension
 
-* Switch between visible light and infrared images from [Himawari 8](http://himawari8.nict.go.jp/), images from the EPIC camera on the [DSCOVR](http://www.nesdis.noaa.gov/DSCOVR/) satellite, [GOES 16](https://en.wikipedia.org/wiki/GOES_16), [GOES 17](https://en.wikipedia.org/wiki/GOES_17), and [Meteosat](https://www.eumetsat.int/website/home/Satellites/CurrentSatellites/Meteosat/index.html) (can only switch in the extension).
+* Switch between visible light and infrared images from [Himawari 8](http://himawari8.nict.go.jp/), [Himawari 9](https://en.wikipedia.org/wiki/Himawari_9), images from the EPIC camera on the [DSCOVR](http://www.nesdis.noaa.gov/DSCOVR/) satellite, [GOES 16](https://en.wikipedia.org/wiki/GOES_16), [GOES 17](https://en.wikipedia.org/wiki/GOES_17), [GOES 19](https://en.wikipedia.org/wiki/GOES-19), and [Meteosat](https://www.eumetsat.int/website/home/Satellites/CurrentSatellites/Meteosat/index.html) (can only switch in the extension).
 * Loads the latest image, updates automatically.
 * Automatically loads images at the optimal resolution (including retina resolutions). If more than one image is needed, the app automatically downloads tiles.
 * Uses Google's caching to take the load from the image servers.
@@ -57,6 +57,7 @@ Here is a screenshot of the options dialog in Chrome:
 ## Changelog
 
 ```
+0.22.0 Update to new proxy, add GOES 19 and Himawari 9.
 0.21.0 Update RAMMB URL format. Move to manifest v3 for Chrome.
 0.20.0 Support natural variant for GOES 17 west.
 0.19.1, 0.19.2 Fix Himawari base URL.

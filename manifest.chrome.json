@@ -3,7 +3,7 @@
   "name": "Satellite New Tab Page",
   "short_name": "Himawari 8",
   "description": "Experience the latest image of Earth from a satellite every time you open a new tab.",
-  "version": "0.22.0",
+  "version": "0.23.0",
   "homepage_url": "https://github.com/domoritz/himawari-8-chrome",
   "chrome_url_overrides" : {
     "newtab": "index.html"
@@ -13,6 +13,7 @@
   ],
   "host_permissions": [
     "https://rammb-slider.cira.colostate.edu/",
+    "https://slider.cira.colostate.edu/",
     "https://himawari8-dl.nict.go.jp/himawari8/",
     "https://epic.gsfc.nasa.gov/"
   ],

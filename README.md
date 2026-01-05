@@ -57,6 +57,7 @@ Here is a screenshot of the options dialog in Chrome:
 ## Changelog
 
 ```
+0.23.0 Update URLs.
 0.22.0 Update to new proxy, add GOES 19 and Himawari 9.
 0.21.0 Update RAMMB URL format. Move to manifest v3 for Chrome.
 0.20.0 Support natural variant for GOES 17 west.

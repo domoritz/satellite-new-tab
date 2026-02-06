@@ -1,7 +1,7 @@
 import { utcFormat, utcParse } from "d3-time-format";
 
 // base url for images
-const HIMAWARI_BASE_URL = "https://himawari8-dl.nict.go.jp/himawari8/img/";
+const HIMAWARI_BASE_URL = "https://himawari8-dl.nict.go.jp/himawari.asia/img/";
 const DSCOVR_BASE_URL = "https://epic.gsfc.nasa.gov/";
 
 const SLIDER_BASE_URL = "https://rammb-slider.cira.colostate.edu/data/";

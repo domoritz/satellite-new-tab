@@ -2,17 +2,18 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
-	"golang.org/x/net/context"
-	"google.golang.org/appengine"
-	"google.golang.org/appengine/delay"
-	"google.golang.org/appengine/memcache"
+	"google.golang.org/appengine/v2"
+	"google.golang.org/appengine/v2/delay"
+	"google.golang.org/appengine/v2/memcache"
+	"google.golang.org/appengine/v2/urlfetch"
 )
 
 func main() {
@@ -22,7 +23,7 @@ func main() {
 	appengine.Main()
 }
 
-const baseURL = "https://himawari8-dl.nict.go.jp/himawari8/img/"
+const baseURL = "https://himawari8-dl.nict.go.jp/himawari.asia/img/"
 const infrared = "INFRARED_FULL"
 const visible = "D531106"
 
@@ -33,7 +34,7 @@ const timeoutUpdate = 1 * time.Minute
 const timeout = 5 * time.Minute
 
 // Get the data about the latest image.
-func downloadLatest(useInfraredImage bool) ([]byte, error) {
+func downloadLatest(ctx context.Context, useInfraredImage bool) ([]byte, error) {
 	var buffer bytes.Buffer
 	buffer.WriteString(baseURL)
 
@@ -44,13 +45,15 @@ func downloadLatest(useInfraredImage bool) ([]byte, error) {
 	}
 	buffer.WriteString("/latest.json")
 
-	resp, err := http.Get(buffer.String())
+	client := urlfetch.Client(ctx)
+	resp, err := client.Get(buffer.String())
 	if err != nil {
-		log.Fatalf("error fetching data: %v", err)
+		log.Printf("error fetching data: %v", err)
 		return nil, err
 	}
+	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +63,7 @@ func downloadLatest(useInfraredImage bool) ([]byte, error) {
 
 // Put the latest data in memcache.
 func cacheLatest(ctx context.Context, useInfraredImage bool, dataKey, timeKey string) ([]byte, error) {
-	body, err := downloadLatest(useInfraredImage)
+	body, err := downloadLatest(ctx, useInfraredImage)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,8 @@
     "strictNullChecks": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "typeRoots": ["node_modules/@types", "node_modules/web-ext-types"],
+    "typeRoots": ["node_modules/@types", "node_modules"],
+    "types": ["d3-time-format", "web-ext-types"],
     "rootDir": "./src"
   },
   "files": ["src/index.ts"]

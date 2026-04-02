@@ -4,10 +4,7 @@ updates:
   directory: "/"
   schedule:
     interval: yearly
-    timezone: America/Vancouver
-  open-pull-requests-limit: 10
 - package-ecosystem: github-actions
   directory: '/'
   schedule:
     interval: yearly
-  open-pull-requests-limit: 10

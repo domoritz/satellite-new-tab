@@ -883,7 +883,24 @@ Ensure the README documents (edit prose to match existing style):
   Meteosat-12 (MTG), GK2A, plus DSCOVR EPIC (natural + enhanced).
 - **Website switching:** `?satellite=<key>` where key is one of `himawari` (default),
   `goes-east`, `goes-west`, `meteosat`, `meteosat-iodc`, `mtg`, `gk2a`, `epic`,
-  `epic-enhanced`.
+  `epic-enhanced`. Also **replace** the "can only switch in the extension" note
+  (current README line 41) — the website now switches too.
+- **Direct preview links:** add a "Try a specific satellite" list of deep links so each
+  satellite is one click from the README (the base URL defaults to Himawari-9):
+
+  ```markdown
+  ## Try a specific satellite
+
+  - [Himawari-9](https://domoritz.github.io/himawari-8-chrome/?satellite=himawari)
+  - [GOES-East](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-east)
+  - [GOES-West](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-west)
+  - [Meteosat 0°](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat)
+  - [Meteosat IODC](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat-iodc)
+  - [Meteosat-12 / MTG](https://domoritz.github.io/himawari-8-chrome/?satellite=mtg)
+  - [GK2A](https://domoritz.github.io/himawari-8-chrome/?satellite=gk2a)
+  - [DSCOVR EPIC](https://domoritz.github.io/himawari-8-chrome/?satellite=epic)
+  - [DSCOVR EPIC Enhanced](https://domoritz.github.io/himawari-8-chrome/?satellite=epic-enhanced)
+  ```
 - **Proxy:** link to `proxy/README.md` and the `cd proxy && npm run deploy` step.
 - **Attribution:** "Imagery: NOAA / CIRA / RAMMB SLIDER" and "Meteosat imagery contains
   modified EUMETSAT data".

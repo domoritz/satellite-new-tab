@@ -37,12 +37,16 @@
 
 ---
 
-## Task 1: Migrate build from Rollup to Vite (library mode)
+## Task 1: Migrate build from Rollup to Vite (library mode) + yarn to npm
 
 **Files:**
 - Create: `vite.config.ts`
-- Modify: `package.json`
-- Delete: `rollup.config.js`
+- Modify: `package.json`, `.github/workflows/push.yml`
+- Delete: `rollup.config.js`, `yarn.lock`
+
+This task also switches the package manager from **yarn to npm** (plain npm — no pnpm).
+`npm install` in Step 1 generates `package-lock.json`; `yarn.lock` is removed and the CI
+workflow + `bundle:src` script are updated to match.
 
 - [ ] **Step 1: Install Vite, remove Rollup plugins**
 
@@ -86,7 +90,13 @@ Replace the `build`, `watch`, and `start` scripts:
     "dev": "vite",
     "start": "vite preview",
 ```
-Leave `bundle:*`, `lint`, `format`, and `postinstall` unchanged.
+Also update the `bundle:src` script — it currently zips `rollup.config.js` (deleted)
+and `yarn.lock` (deleted). Replace those two filenames with `vite.config.ts` and
+`package-lock.json`:
+```json
+    "bundle:src": "zip -r source.zip src package.json lib index.html manifest*.json options.* vite.config.ts style.css tsconfig.json package-lock.json README.md",
+```
+Leave the other `bundle:*`, `lint`, `format`, and `postinstall` scripts unchanged.
 
 - [ ] **Step 4: Install terser (Vite peer dep for `minify: "terser"`)**
 
@@ -96,12 +106,27 @@ npm install --save-dev terser
 ```
 Expected: `terser` added to `devDependencies`.
 
-- [ ] **Step 5: Delete the old Rollup config**
+- [ ] **Step 5: Delete the old Rollup config and yarn lockfile**
 
 Run:
 ```bash
-git rm rollup.config.js
+git rm rollup.config.js yarn.lock
 ```
+
+- [ ] **Step 5b: Switch CI from yarn to npm**
+
+Edit `.github/workflows/push.yml`. Change the Node cache from `yarn` to `npm`, and the
+three yarn steps to npm equivalents:
+- `cache: "yarn"` → `cache: "npm"`
+- `run: yarn --frozen-lockfile` → `run: npm ci`
+- `run: yarn lint` → `run: npm run lint`
+- `run: yarn build` → `run: npm run build`
+
+Verify no `yarn` references remain in the workflow:
+```bash
+grep -n yarn .github/workflows/push.yml || echo "clean"
+```
+Expected: `clean`.
 
 - [ ] **Step 6: Build and verify output**
 
@@ -130,10 +155,10 @@ Run `npm run dev`, open the printed local URL, and confirm the current Himawari-
 - [ ] **Step 9: Commit**
 
 ```bash
-git add vite.config.ts package.json package-lock.json
-git rm --cached rollup.config.js 2>/dev/null; true
-git commit -m "build: migrate from Rollup to Vite (library mode)"
+git add vite.config.ts package.json package-lock.json .github/workflows/push.yml
+git commit -m "build: migrate from Rollup to Vite and yarn to npm"
 ```
+(`rollup.config.js` and `yarn.lock` were already staged for deletion in Step 5.)
 
 ---
 
@@ -906,6 +931,9 @@ Ensure the README documents (edit prose to match existing style):
   modified EUMETSAT data".
 - Remove any references to `himawari-8.appspot.com`, `meteosat-url.appspot.com`, the Go
   proxy, and native Himawari visible/infrared as the mechanism.
+- **yarn → npm:** update the developer/release prose (current README lines 111 and 113):
+  `yarn` → `npm install`, `yarn watch` → `npm run watch`, `yarn start` → `npm run dev`,
+  `yarn bundle` → `npm run bundle`. Remove the yarnpkg.com link.
 
 - [ ] **Step 3: Commit**
 
@@ -932,7 +960,7 @@ Expected: both exit 0.
 
 Run:
 ```bash
-grep -nE "appspot|himawari8-dl|INFRARED_FULL|D531106|GOES_16|GOES_17|meteosat-url|himawariURLs|setHimawariImages|setMeteosatImages|getLatestHimawariDate|getLatestMeteosatDate" src/index.ts options.html options.js manifest.chrome.json manifest.firefox.json README.md || echo "clean"
+grep -rnE "appspot|himawari8-dl|INFRARED_FULL|D531106|GOES_16|GOES_17|meteosat-url|himawariURLs|setHimawariImages|setMeteosatImages|getLatestHimawariDate|getLatestMeteosatDate|yarn|rollup" src/index.ts options.html options.js manifest.chrome.json manifest.firefox.json README.md package.json .github/workflows/push.yml || echo "clean"
 ```
 Expected: `clean` (no matches). Any hit is a leftover to remove.
 

@@ -1,5 +1,5 @@
 {
-  "name": "himawari",
+  "name": "satellite-new-tab",
   "version": "0.23.0",
   "description": "Experience the latest image of Earth from a satellite every time you open a new tab in Chrome or Firefox.",
   "main": "bundle.js",
@@ -25,20 +25,20 @@
     "start": "vite preview",
     "prebundle": "npm run build",
     "bundle": "npm run bundle:firefox && npm run bundle:chrome && npm run bundle:src",
-    "bundle:chrome": "cp manifest.chrome.json manifest.json && zip himawari_chrome.zip lib/* icons/*.png index.html style.css bundle.js bundle.js.map options.js options.html Roboto_Slab/*.ttf manifest.json",
-    "bundle:firefox": "cp manifest.firefox.json manifest.json && zip himawari_firefox.zip lib/* icons/*.png index.html style.css bundle.js options.js bundle.js.map options.html Roboto_Slab/*.ttf manifest.json",
+    "bundle:chrome": "cp manifest.chrome.json manifest.json && zip satellite_chrome.zip lib/* icons/*.png index.html style.css bundle.js bundle.js.map options.js options.html Roboto_Slab/*.ttf manifest.json",
+    "bundle:firefox": "cp manifest.firefox.json manifest.json && zip satellite_firefox.zip lib/* icons/*.png index.html style.css bundle.js options.js bundle.js.map options.html Roboto_Slab/*.ttf manifest.json",
     "bundle:src": "zip -r source.zip src package.json lib index.html manifest*.json options.* vite.config.ts style.css tsconfig.json package-lock.json README.md",
     "lint": "eslint src/index.ts options.js",
     "format": "eslint --fix src/index.ts options.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/domoritz/himawari-8-chrome.git"
+    "url": "git+https://github.com/domoritz/satellite-new-tab.git"
   },
   "author": "Dominik Moritz",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/domoritz/himawari-8-chrome/issues"
+    "url": "https://github.com/domoritz/satellite-new-tab/issues"
   },
-  "homepage": "https://github.com/domoritz/himawari-8-chrome#readme"
+  "homepage": "https://github.com/domoritz/satellite-new-tab#readme"
 }

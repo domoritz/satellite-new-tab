@@ -1,8 +1,8 @@
 # 🛰 Satellite New Tab Page (Chrome and Firefox)
 
-Experience the latest full-disk image of Earth from a [geostationary](https://en.wikipedia.org/wiki/Geostationary_orbit) weather satellite every time you open a new tab in Chrome or Firefox. The imagery updates every few minutes. Since the new tab page is a simple web page, you can also [try it online](https://domoritz.github.io/himawari-8-chrome).
+Experience the latest full-disk image of Earth from a [geostationary](https://en.wikipedia.org/wiki/Geostationary_orbit) weather satellite every time you open a new tab in Chrome or Firefox. The imagery updates every few minutes. Since the new tab page is a simple web page, you can also [try it online](https://domoritz.github.io/satellite-new-tab).
 
-**Supports multiple satellites — Himawari-9, GOES-East/West, Meteosat (0° and IODC), MTG, GK2A, and DSCOVR — in both the extension and [on the web](https://domoritz.github.io/himawari-8-chrome).**
+**Supports multiple satellites — Himawari-9, GOES-East/West, Meteosat (0° and IODC), MTG, GK2A, and DSCOVR — in both the extension and [on the web](https://domoritz.github.io/satellite-new-tab).**
 
 ## Installation
 
@@ -67,15 +67,15 @@ The website loads Himawari-9 by default. Add a `?satellite=<key>` query paramete
 
 Direct preview links:
 
-- [Himawari-9](https://domoritz.github.io/himawari-8-chrome/?satellite=himawari)
-- [GOES-East](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-east)
-- [GOES-West](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-west)
-- [Meteosat 0°](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat)
-- [Meteosat IODC](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat-iodc)
-- [Meteosat-12 / MTG](https://domoritz.github.io/himawari-8-chrome/?satellite=mtg)
-- [GK2A](https://domoritz.github.io/himawari-8-chrome/?satellite=gk2a)
-- [DSCOVR EPIC](https://domoritz.github.io/himawari-8-chrome/?satellite=epic)
-- [DSCOVR EPIC Enhanced](https://domoritz.github.io/himawari-8-chrome/?satellite=epic-enhanced)
+- [Himawari-9](https://domoritz.github.io/satellite-new-tab/?satellite=himawari)
+- [GOES-East](https://domoritz.github.io/satellite-new-tab/?satellite=goes-east)
+- [GOES-West](https://domoritz.github.io/satellite-new-tab/?satellite=goes-west)
+- [Meteosat 0°](https://domoritz.github.io/satellite-new-tab/?satellite=meteosat)
+- [Meteosat IODC](https://domoritz.github.io/satellite-new-tab/?satellite=meteosat-iodc)
+- [Meteosat-12 / MTG](https://domoritz.github.io/satellite-new-tab/?satellite=mtg)
+- [GK2A](https://domoritz.github.io/satellite-new-tab/?satellite=gk2a)
+- [DSCOVR EPIC](https://domoritz.github.io/satellite-new-tab/?satellite=epic)
+- [DSCOVR EPIC Enhanced](https://domoritz.github.io/satellite-new-tab/?satellite=epic-enhanced)
 
 ## How it works
 
@@ -135,7 +135,7 @@ Imagery credit: NOAA / CIRA / RAMMB SLIDER, JMA, NASA, KMA. Meteosat imagery con
 
 ## Demo
 
-Have a look at the [live satellite image](https://domoritz.github.io/himawari-8-chrome).
+Have a look at the [live satellite image](https://domoritz.github.io/satellite-new-tab).
 
 
 ## Contributing

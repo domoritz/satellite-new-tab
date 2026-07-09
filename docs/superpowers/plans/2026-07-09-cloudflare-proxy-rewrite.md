@@ -916,15 +916,15 @@ Ensure the README documents (edit prose to match existing style):
   ```markdown
   ## Try a specific satellite
 
-  - [Himawari-9](https://domoritz.github.io/himawari-8-chrome/?satellite=himawari)
-  - [GOES-East](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-east)
-  - [GOES-West](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-west)
-  - [Meteosat 0°](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat)
-  - [Meteosat IODC](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat-iodc)
-  - [Meteosat-12 / MTG](https://domoritz.github.io/himawari-8-chrome/?satellite=mtg)
-  - [GK2A](https://domoritz.github.io/himawari-8-chrome/?satellite=gk2a)
-  - [DSCOVR EPIC](https://domoritz.github.io/himawari-8-chrome/?satellite=epic)
-  - [DSCOVR EPIC Enhanced](https://domoritz.github.io/himawari-8-chrome/?satellite=epic-enhanced)
+  - [Himawari-9](https://domoritz.github.io/satellite-new-tab/?satellite=himawari)
+  - [GOES-East](https://domoritz.github.io/satellite-new-tab/?satellite=goes-east)
+  - [GOES-West](https://domoritz.github.io/satellite-new-tab/?satellite=goes-west)
+  - [Meteosat 0°](https://domoritz.github.io/satellite-new-tab/?satellite=meteosat)
+  - [Meteosat IODC](https://domoritz.github.io/satellite-new-tab/?satellite=meteosat-iodc)
+  - [Meteosat-12 / MTG](https://domoritz.github.io/satellite-new-tab/?satellite=mtg)
+  - [GK2A](https://domoritz.github.io/satellite-new-tab/?satellite=gk2a)
+  - [DSCOVR EPIC](https://domoritz.github.io/satellite-new-tab/?satellite=epic)
+  - [DSCOVR EPIC Enhanced](https://domoritz.github.io/satellite-new-tab/?satellite=epic-enhanced)
   ```
 - **Proxy:** link to `proxy/README.md` and the `cd proxy && npm run deploy` step.
 - **Attribution:** "Imagery: NOAA / CIRA / RAMMB SLIDER" and "Meteosat imagery contains

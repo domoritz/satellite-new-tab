@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Satellite New Tab Page",
-  "short_name": "Himawari 8",
+  "short_name": "Satellite",
   "description": "Experience the latest image of Earth from a satellite every time you open a new tab.",
   "version": "0.23.0",
   "homepage_url": "https://github.com/domoritz/himawari-8-chrome",

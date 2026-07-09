@@ -68,6 +68,9 @@ pieces on the client for the sake of avoiding one small proxy we already run.
 - **Website default satellite:** Himawari-9 (unchanged).
 - **Worker:** stateless pass-through, no default satellite; keeps the existing
   `slider-proxy.domoritz.workers.dev` name (no DNS/URL churn).
+- **Build tooling:** migrate Rollup → **Vite in library mode** (single IIFE
+  `bundle.js` at repo root, unchanged packaging/deploy), done as the first task so it
+  is reviewable independently of the source changes.
 
 ## Architecture
 
@@ -118,16 +121,15 @@ size and max zoom level differ per satellite and must be respected:
 | `meteosat-0deg` | Meteosat 0° | `meteosat` | 464 | 3 |
 | `meteosat-9` | Meteosat IODC | `meteosat-iodc` | 464 | 3 |
 | `meteosat-12` | Meteosat-12 (MTG) | `mtg` | 696 | 4 |
-| `gk2a` | GK2A | `gk2a` | *(from catalog)* | *(from catalog)* |
+| `gk2a` | GK2A | `gk2a` | 688 | 4 |
 | EPIC (direct) | DSCOVR natural | `epic` | — | — |
 | EPIC (direct) | DSCOVR enhanced | `epic-enhanced` | — | — |
 
-- The exact table (especially GK2A's `tileSize` and `maxLevel`) is generated **once
-  during implementation** by reading SLIDER's catalog file
+- These numbers were read from SLIDER's catalog file
   `https://slider.cira.colostate.edu/js/define-products---rammb-slider.js`:
   `maxLevel = full_disk.max_zoom_level − geocolor.zoom_level_adjust`, `tileSize` =
-  the sector's `tile_size`. The result is baked into a constant; `proxy/README.md`
-  and a code comment record how to regenerate it when CIRA changes satellites.
+  the sector's `tile_size`. A code comment records how to regenerate the table when
+  CIRA changes satellites.
 - **Product is always `geocolor`** — clean imagery (true color by day, IR at night).
   The gridlines/borders/labels seen in the SLIDER web viewer are separate overlay
   layers that the app **never fetches**, so composited images are artifact-free.

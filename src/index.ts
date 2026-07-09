@@ -155,6 +155,9 @@ function getOptimalNumberOfBlocks(width: number, sizes: number[]): {blocks: numb
 // the date that is currently loaded
 let loadedDate: Date = null;
 let loadedType: ImageType = null;
+// True while the canvas only shows the (lossy JPEG) cached image, so we know to
+// re-render from crisp PNG tiles even if the latest timestamp is unchanged.
+let loadedFromCache = false;
 
 function timeSince(date: Date) {
   const seconds = Math.floor(((new Date()).getTime() - date.getTime()) / 1000);
@@ -210,6 +213,8 @@ function updateStateAndUI(date: Date, imageType: ImageType) {
   loadedDate = date;
   setBodyClass(imageType);
   loadedType = imageType;
+  // A real render just happened; the crisp tiles are now on the canvas.
+  loadedFromCache = false;
 }
 
 /**
@@ -235,7 +240,7 @@ function storeCanvas(date: Date, imageType: ImageType, quality = IMAGE_QUALITY) 
 
 function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageType) {
   // no need to set images if we have up to date images and the image type has not changed
-  if (loadedDate && latest.date.getTime() === loadedDate.getTime() && loadedType === imageType) {
+  if (!loadedFromCache && loadedDate && latest.date.getTime() === loadedDate.getTime() && loadedType === imageType) {
     return;
   }
 
@@ -279,7 +284,7 @@ function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageTyp
 
 function setSliderImages(date: Date, sat: SliderSat, imageType: ImageType) {
   // no need to set images if we have up to date images and the type has not changed
-  if (loadedDate && date.getTime() === loadedDate.getTime() && loadedType === imageType) {
+  if (!loadedFromCache && loadedDate && date.getTime() === loadedDate.getTime() && loadedType === imageType) {
     return;
   }
 
@@ -381,6 +386,9 @@ function setCachedImage() {
     ctx.drawImage(img, 0, 0);
 
     updateStateAndUI(date, localStorage.getItem(CACHED_IMAGE_TYPE_KEY) as ImageType);
+    // Mark that we are only showing the lossy cache so setLatestImage re-renders
+    // from crisp PNG tiles even when the latest timestamp is unchanged.
+    loadedFromCache = true;
   };
   img.src = localStorage.getItem(IMAGE_DATA_KEY);
 }

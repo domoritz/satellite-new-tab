@@ -45,7 +45,7 @@ abbr {
 
 /* Always keep the earth centered */
 @media (orientation:landscape) {
-  .himawari #output {
+  .slider #output {
     height: 90vh;
     width: 90vh;
   }
@@ -54,19 +54,9 @@ abbr {
     height: 100vh;
     width: 100vh;
   }
-
-  .goes #output {
-    height: 90vh;
-    width: 90vh;
-  }
-
-  .meteosat #output {
-    height: 90vh;
-    width: 90vh;
-  }
 }
 @media screen and (orientation:portrait) {
-  .himawari #output {
+  .slider #output {
     height: 90vw;
     width: 90vw;
   }
@@ -74,16 +64,6 @@ abbr {
   .dscovr #output {
     height: 100vw;
     width: 100vw;
-  }
-
-  .goes #output {
-    height: 90vw;
-    width: 90vw;
-  }
-
-  .meteosat #output {
-    height: 90vw;
-    width: 90vw;
   }
 }
 

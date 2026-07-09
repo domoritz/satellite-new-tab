@@ -39,7 +39,7 @@ This extension is inspired by https://glittering.blue/, https://github.com/jakie
 * Loads the latest image, updates automatically.
 * Automatically loads images at the optimal resolution (including retina resolutions). If more than one image is needed, the app automatically downloads tiles.
 * Caches last version in local storage (compressed JPEG) and immediately displays it when you load the page. Then loads the latest image.
-* A small [Cloudflare Worker](proxy/) adds CORS headers so the website can load [CIRA SLIDER](https://rammb-slider.cira.colostate.edu/) imagery; the extension fetches SLIDER directly via host permissions. Tiles are cached at the edge. DSCOVR/EPIC is fetched directly.
+* A small [Cloudflare Worker](proxy/) adds CORS headers so the website can load [CIRA SLIDER](https://rammb-slider.cira.colostate.edu/) imagery and the NASA EPIC image archive; the extension fetches these directly via host permissions. Tiles are cached at the edge.
 * Full offline support.
 * Images are drawn on a canvas so that we can cache and load it easily.
 * The Earth always stay centered, thanks to CSS magic.
@@ -79,7 +79,7 @@ Direct preview links:
 
 ## How it works
 
-The website and extension render full-disk satellite imagery from [CIRA SLIDER](https://rammb-slider.cira.colostate.edu/) (product: GeoColor). SLIDER sends no CORS headers, so the **website** routes tile and metadata requests through a small [Cloudflare Worker](proxy/) (deployed at `slider-proxy.domoritz.workers.dev`) that adds them. The **extension** fetches SLIDER directly using its host permissions. DSCOVR/EPIC already sends CORS headers and is fetched directly in both.
+The website and extension render full-disk satellite imagery from [CIRA SLIDER](https://rammb-slider.cira.colostate.edu/) (product: GeoColor), plus whole-Earth images from NASA's DSCOVR/EPIC. Neither SLIDER nor the EPIC image archive sends CORS headers, so the **website** routes those image and metadata requests through a small [Cloudflare Worker](proxy/) (deployed at `slider-proxy.domoritz.workers.dev`) that adds them. The **extension** fetches everything directly using its host permissions. (The EPIC JSON API does send CORS, so it is always fetched directly.)
 
 See [`proxy/README.md`](proxy/README.md) for the worker; deploy it with `cd proxy && npm run deploy`.
 

@@ -119,7 +119,10 @@ async function getLatestDscovrDate(imageType: ImageType) {
   }
 }
 
-function sliderProxy(url: string) {
+// On the website, route a source URL through the CORS worker (SLIDER and the EPIC
+// image archive send no CORS headers). The extension fetches directly via
+// host_permissions, so it needs no proxy.
+function proxied(url: string) {
   if (isExtension) {
     return url;
   }
@@ -127,7 +130,7 @@ function sliderProxy(url: string) {
 }
 
 async function getLatestSliderDate(sat: SliderSat) {
-  const raw = await fetch(sliderProxy(`${SLIDER_BASE_URL}json/${sat.path}/full_disk/geocolor/latest_times.json`));
+  const raw = await fetch(proxied(`${SLIDER_BASE_URL}json/${sat.path}/full_disk/geocolor/latest_times.json`));
   const data: { timestamps_int: number[] } = await raw.json();
 
   // timestamps_int are integers, newest first; stringify for parsing.
@@ -286,7 +289,8 @@ function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageTyp
   const type = imageType === DSCOVR_EPIC_ENHANCED ? "enhanced" : "natural";
   const month = pad(latest.date.getMonth() + 1, 2);
   const date = pad(latest.date.getDate(), 2);
-  img.src = `${DSCOVR_BASE_URL}archive/${type}/${latest.date.getFullYear()}/${month}/${date}/png/${latest.image}.png`;
+  // EPIC archive images send no CORS headers, so proxy them on the website.
+  img.src = proxied(`${DSCOVR_BASE_URL}archive/${type}/${latest.date.getFullYear()}/${month}/${date}/png/${latest.image}.png`);
 }
 
 function setSliderImages(date: Date, sat: SliderSat, imageType: ImageType) {
@@ -322,7 +326,7 @@ function setSliderImages(date: Date, sat: SliderSat, imageType: ImageType) {
         ctx.drawImage(img, tile.x * sat.tileSize, tile.y * sat.tileSize, sat.tileSize, sat.tileSize);
         resolve();
       };
-      img.src = sliderProxy(tile.url);
+      img.src = proxied(tile.url);
     });
   }
 

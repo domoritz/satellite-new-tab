@@ -1,20 +1,20 @@
 # slider-proxy
 
-A Cloudflare Worker that CORS-proxies [CIRA SLIDER](https://slider.cira.colostate.edu/)
-imagery for the Himawari/Satellite new-tab website. SLIDER sends no CORS headers, so
-the browser cannot fetch its tiles/JSON directly; this worker adds
-`Access-Control-Allow-Origin: *`.
+A Cloudflare Worker that CORS-proxies satellite imagery for the Satellite new-tab
+website. Neither [CIRA SLIDER](https://slider.cira.colostate.edu/) (tiles/JSON) nor the
+NASA [EPIC](https://epic.gsfc.nasa.gov/) image archive sends CORS headers, so the browser
+cannot draw them onto a canvas directly; this worker adds `Access-Control-Allow-Origin: *`.
 
 It replaces the old Google AppEngine proxies (`himawari-8.appspot.com` and
-`meteosat-url.appspot.com`) — everything the website needs now comes from SLIDER.
+`meteosat-url.appspot.com`).
 
 ## Contract
 
-`GET /?<url-encoded slider URL>` — only `slider.cira.colostate.edu` and
-`rammb-slider.cira.colostate.edu` are allowed (not an open proxy). Tiles are cached
-for 7 days (immutable); `latest_times.json` for 60s.
+`GET /?<url-encoded source URL>` — only `slider.cira.colostate.edu`,
+`rammb-slider.cira.colostate.edu`, and `epic.gsfc.nasa.gov` are allowed (not an open
+proxy). Tiles/images are cached for 7 days (immutable); `latest_times.json` for 60s.
 
-The **browser extension** does not use this worker — it fetches SLIDER directly via
+The **browser extension** does not use this worker — it fetches these hosts directly via
 `host_permissions`. Only the website proxies through here.
 
 ## Develop / deploy

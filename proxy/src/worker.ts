@@ -1,14 +1,17 @@
-// CORS pass-through for CIRA SLIDER (slider.cira.colostate.edu).
+// CORS pass-through for the satellite image sources that don't send CORS headers.
 //
-// Contract: GET /?<url-encoded slider URL>
-// The website calls this because SLIDER sends no CORS headers. The extension does
-// NOT use this worker (it fetches SLIDER directly via host_permissions).
+// Contract: GET /?<url-encoded source URL>
+// The website calls this because CIRA SLIDER (tiles/JSON) and the NASA EPIC image
+// archive send no CORS headers, so a browser can't fetch them onto a canvas. The
+// extension does NOT use this worker (it fetches these hosts directly via
+// host_permissions).
 //
-// Only SLIDER hosts are allowed, so this cannot be abused as an open proxy.
+// Only these hosts are allowed, so this cannot be abused as an open proxy.
 
 const ALLOWED_HOSTS = new Set([
   "slider.cira.colostate.edu",
   "rammb-slider.cira.colostate.edu",
+  "epic.gsfc.nasa.gov",
 ]);
 
 const CORS_HEADERS: Record<string, string> = {

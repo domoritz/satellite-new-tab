@@ -1,6 +1,6 @@
 # 🛰 Satellite New Tab Page (Chrome and Firefox)
 
-Experience the latest image taken by the [geostationary](https://en.wikipedia.org/wiki/Geostationary_orbit) [Himawari satellites](https://en.wikipedia.org/wiki/Himawari_(satellites)) every time you open a new tab in Chrome or Firefox. The Himawari satellites have been deployed by the [Japan Meteorological Agency](http://www.jma.go.jp/jma/indexe.html) and takes photographs of Earth every 10 minutes. Since the new tab page is a simple web page, you can also [try it online](https://domoritz.github.io/himawari-8-chrome).
+Experience the latest full-disk image of Earth from a [geostationary](https://en.wikipedia.org/wiki/Geostationary_orbit) weather satellite every time you open a new tab in Chrome or Firefox. The imagery updates every few minutes. Since the new tab page is a simple web page, you can also [try it online](https://domoritz.github.io/himawari-8-chrome).
 
 **Supports multiple satellites — Himawari-9, GOES-East/West, Meteosat (0° and IODC), MTG, GK2A, and DSCOVR — in both the extension and [on the web](https://domoritz.github.io/himawari-8-chrome).**
 
@@ -20,14 +20,11 @@ Experience the latest image taken by the [geostationary](https://en.wikipedia.or
 
 ![screenshot](screenshots/main.png "Screenshot of the browser with the new tab page")
 
-Below are screenshots of the different satellite images supported by this extension (Himawari, GOES, Meteosat, and DSCOVR).
+Below are examples of the satellite imagery supported (Himawari, GOES, Meteosat, and DSCOVR).
 
 <p align="center">
   <img src="screenshots/himawari.png" width="160">
-  <img src="screenshots/infrared.png" width="160">
   <img src="screenshots/goes16.png" width="160">
-  <img src="screenshots/goes16_natural.png" width="160">
-  <img src="screenshots/goes17.png" width="160">
   <img src="screenshots/meteosat.png" width="160">
   <img src="screenshots/meteosat_iodc.png" width="160">
   <img src="screenshots/dscovr.png" width="160">
@@ -36,7 +33,7 @@ Below are screenshots of the different satellite images supported by this extens
 
 This extension is inspired by https://glittering.blue/, https://github.com/jakiestfu/himawari.js/ and https://github.com/ungoldman/himawari-urls.
 
-## Features of the extension
+## Features
 
 * Switch between full-disk GeoColor imagery (true color by day, infrared at night) from [Himawari-9](https://en.wikipedia.org/wiki/Himawari_9), [GOES-East/West](https://en.wikipedia.org/wiki/Geostationary_Operational_Environmental_Satellite), [Meteosat](https://www.eumetsat.int/meteosat-second-generation) (0° and Indian Ocean), [MTG](https://www.eumetsat.int/meteosat-third-generation), and [GK2A](https://en.wikipedia.org/wiki/GEO-KOMPSAT-2) — plus whole-Earth images from the EPIC camera on [DSCOVR](https://www.nesdis.noaa.gov/DSCOVR/). Switch in the extension options, or on the web with a [`?satellite=` URL parameter](#switch-satellites-on-the-web).
 * Loads the latest image, updates automatically.
@@ -91,6 +88,7 @@ Imagery credit: NOAA / CIRA / RAMMB SLIDER, JMA, NASA, KMA. Meteosat imagery con
 ## Changelog
 
 ```
+0.24.0 (next) Consolidate the proxies into a single Cloudflare Worker; serve all imagery from CIRA SLIDER (GeoColor). Add website satellite switching via ?satellite=. Add GOES-East/West, Meteosat IODC, MTG, and GK2A. Switch the build to Vite and the package manager to npm; deploy the site via GitHub Actions. Remove the native Himawari (visible/infrared) feeds and the AppEngine proxies.
 0.23.0 Update URLs.
 0.22.0 Update to new proxy, add GOES 19 and Himawari 9.
 0.21.0 Update RAMMB URL format. Move to manifest v3 for Chrome.
@@ -137,11 +135,9 @@ Imagery credit: NOAA / CIRA / RAMMB SLIDER, JMA, NASA, KMA. Meteosat imagery con
 
 ## Demo
 
-Have a look at the [latest image from Himawari 8](https://domoritz.github.io/himawari-8-chrome).
+Have a look at the [live satellite image](https://domoritz.github.io/himawari-8-chrome).
 
 
-## Develop
+## Contributing
 
-Install the dependencies with `npm install`. Then run `npm run watch` in one terminal to compile the bundle in the background. At this point you can choose between two methods to view the page. First, you can run `npm run dev` to start the Vite dev server. Note that if you are using this method, you cannot access some browser extension specific features. Second, install the extension as an [unpacked extension into Chrome](https://developer.chrome.com/extensions/getstarted) or Firefox and open a new tab. The extension should load in development mode.
-
-To make a release, update the version number in `package.json` and `manifest.*.json`. Then commit the changes and tag it. Lastly, pack the extension (`npm run bundle`), push the code and tags, and deploy on the chrome app store.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to run the frontend (extension + website) and the proxy, and for the release process. The website is deployed automatically to GitHub Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml) on every push to `main`.

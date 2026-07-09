@@ -16,9 +16,8 @@
   },
   "permissions": [
     "storage",
-    "https://rammb-slider.cira.colostate.edu/",
     "https://slider.cira.colostate.edu/",
-    "https://himawari8-dl.nict.go.jp/himawari8/",
+    "https://rammb-slider.cira.colostate.edu/",
     "https://epic.gsfc.nasa.gov/"
   ],
   "icons": {

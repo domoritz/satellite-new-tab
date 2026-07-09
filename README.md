@@ -2,7 +2,7 @@
 
 Experience the latest image taken by the [geostationary](https://en.wikipedia.org/wiki/Geostationary_orbit) [Himawari satellites](https://en.wikipedia.org/wiki/Himawari_(satellites)) every time you open a new tab in Chrome or Firefox. The Himawari satellites have been deployed by the [Japan Meteorological Agency](http://www.jma.go.jp/jma/indexe.html) and takes photographs of Earth every 10 minutes. Since the new tab page is a simple web page, you can also [try it online](https://domoritz.github.io/himawari-8-chrome).
 
-**The browser extension supports multiple satellites: Himawari, GOES, Meteosat, and DSCOVR.**
+**Supports multiple satellites — Himawari-9, GOES-East/West, Meteosat (0° and IODC), MTG, GK2A, and DSCOVR — in both the extension and [on the web](https://domoritz.github.io/himawari-8-chrome).**
 
 ## Installation
 
@@ -38,13 +38,11 @@ This extension is inspired by https://glittering.blue/, https://github.com/jakie
 
 ## Features of the extension
 
-* Switch between visible light and infrared images from [Himawari 8](http://himawari8.nict.go.jp/), [Himawari 9](https://en.wikipedia.org/wiki/Himawari_9), images from the EPIC camera on the [DSCOVR](http://www.nesdis.noaa.gov/DSCOVR/) satellite, [GOES 16](https://en.wikipedia.org/wiki/GOES_16), [GOES 17](https://en.wikipedia.org/wiki/GOES_17), [GOES 19](https://en.wikipedia.org/wiki/GOES-19), and [Meteosat](https://www.eumetsat.int/website/home/Satellites/CurrentSatellites/Meteosat/index.html) (can only switch in the extension).
+* Switch between full-disk GeoColor imagery (true color by day, infrared at night) from [Himawari-9](https://en.wikipedia.org/wiki/Himawari_9), [GOES-East/West](https://en.wikipedia.org/wiki/Geostationary_Operational_Environmental_Satellite), [Meteosat](https://www.eumetsat.int/meteosat-second-generation) (0° and Indian Ocean), [MTG](https://www.eumetsat.int/meteosat-third-generation), and [GK2A](https://en.wikipedia.org/wiki/GEO-KOMPSAT-2) — plus whole-Earth images from the EPIC camera on [DSCOVR](https://www.nesdis.noaa.gov/DSCOVR/). Switch in the extension options, or on the web with a [`?satellite=` URL parameter](#switch-satellites-on-the-web).
 * Loads the latest image, updates automatically.
 * Automatically loads images at the optimal resolution (including retina resolutions). If more than one image is needed, the app automatically downloads tiles.
-* Uses Google's caching to take the load from the image servers.
 * Caches last version in local storage (compressed JPEG) and immediately displays it when you load the page. Then loads the latest image.
-* JSON proxy on AppEngine to get around same origin policy. The code is on the [proxy branch](https://github.com/domoritz/himawari-8-chrome/tree/proxy).
-* To get the latest image URL for Meteosat, we use a [web scraper](https://github.com/domoritz/himawari-8-chrome/tree/meteosat).
+* A small [Cloudflare Worker](proxy/) adds CORS headers so the website can load [CIRA SLIDER](https://rammb-slider.cira.colostate.edu/) imagery; the extension fetches SLIDER directly via host permissions. Tiles are cached at the edge. DSCOVR/EPIC is fetched directly.
 * Full offline support.
 * Images are drawn on a canvas so that we can cache and load it easily.
 * The Earth always stay centered, thanks to CSS magic.
@@ -53,6 +51,42 @@ This extension is inspired by https://glittering.blue/, https://github.com/jakie
 Here is a screenshot of the options dialog in Chrome:
 
 <img src="screenshots/options.png" width="200">
+
+## Switch satellites on the web
+
+The website loads Himawari-9 by default. Add a `?satellite=<key>` query parameter to pick a different one:
+
+| Key | Satellite |
+| --- | --- |
+| `himawari` | Himawari-9 (default) |
+| `goes-east` | GOES-East |
+| `goes-west` | GOES-West |
+| `meteosat` | Meteosat 0° |
+| `meteosat-iodc` | Meteosat IODC |
+| `mtg` | Meteosat-12 / MTG |
+| `gk2a` | GK2A |
+| `epic` | DSCOVR EPIC |
+| `epic-enhanced` | DSCOVR EPIC Enhanced |
+
+Direct preview links:
+
+- [Himawari-9](https://domoritz.github.io/himawari-8-chrome/?satellite=himawari)
+- [GOES-East](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-east)
+- [GOES-West](https://domoritz.github.io/himawari-8-chrome/?satellite=goes-west)
+- [Meteosat 0°](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat)
+- [Meteosat IODC](https://domoritz.github.io/himawari-8-chrome/?satellite=meteosat-iodc)
+- [Meteosat-12 / MTG](https://domoritz.github.io/himawari-8-chrome/?satellite=mtg)
+- [GK2A](https://domoritz.github.io/himawari-8-chrome/?satellite=gk2a)
+- [DSCOVR EPIC](https://domoritz.github.io/himawari-8-chrome/?satellite=epic)
+- [DSCOVR EPIC Enhanced](https://domoritz.github.io/himawari-8-chrome/?satellite=epic-enhanced)
+
+## How it works
+
+The website and extension render full-disk satellite imagery from [CIRA SLIDER](https://rammb-slider.cira.colostate.edu/) (product: GeoColor). SLIDER sends no CORS headers, so the **website** routes tile and metadata requests through a small [Cloudflare Worker](proxy/) (deployed at `slider-proxy.domoritz.workers.dev`) that adds them. The **extension** fetches SLIDER directly using its host permissions. DSCOVR/EPIC already sends CORS headers and is fetched directly in both.
+
+See [`proxy/README.md`](proxy/README.md) for the worker; deploy it with `cd proxy && npm run deploy`.
+
+Imagery credit: NOAA / CIRA / RAMMB SLIDER, JMA, NASA, KMA. Meteosat imagery contains modified EUMETSAT data.
 
 ## Changelog
 
@@ -108,6 +142,6 @@ Have a look at the [latest image from Himawari 8](https://domoritz.github.io/him
 
 ## Develop
 
-Install the latest dependencies with [`yarn`](https://yarnpkg.com/). Then run `yarn watch` in one terminal to compile the bundle in the background. At this point you can choose between two methods to view the page. First, you can run `yarn start` to start the webserver at [localhost:8000](http://localhost:8000/). Note that if you are using this method, you cannot access some browser extension specific features. Second, install the extension as an [unpacked extension into Chrome](https://developer.chrome.com/extensions/getstarted) or Firefox and open a new tab. The extension should load in development mode.
+Install the dependencies with `npm install`. Then run `npm run watch` in one terminal to compile the bundle in the background. At this point you can choose between two methods to view the page. First, you can run `npm run dev` to start the Vite dev server. Note that if you are using this method, you cannot access some browser extension specific features. Second, install the extension as an [unpacked extension into Chrome](https://developer.chrome.com/extensions/getstarted) or Firefox and open a new tab. The extension should load in development mode.
 
-To make a release, update the version number in `package.json` and `manifest.*.json`. Then commit the changes and tag it. Lastly, pack the extension (`yarn bundle`), push the code and tags, and deploy on the chrome app store.
+To make a release, update the version number in `package.json` and `manifest.*.json`. Then commit the changes and tag it. Lastly, pack the extension (`npm run bundle`), push the code and tags, and deploy on the chrome app store.

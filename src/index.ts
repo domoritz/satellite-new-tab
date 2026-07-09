@@ -155,9 +155,6 @@ function getOptimalNumberOfBlocks(width: number, sizes: number[]): {blocks: numb
 // the date that is currently loaded
 let loadedDate: Date = null;
 let loadedType: ImageType = null;
-// True while the canvas only shows the (lossy JPEG) cached image, so we know to
-// re-render from crisp PNG tiles even if the latest timestamp is unchanged.
-let loadedFromCache = false;
 
 function timeSince(date: Date) {
   const seconds = Math.floor(((new Date()).getTime() - date.getTime()) / 1000);
@@ -213,8 +210,18 @@ function updateStateAndUI(date: Date, imageType: ImageType) {
   loadedDate = date;
   setBodyClass(imageType);
   loadedType = imageType;
-  // A real render just happened; the crisp tiles are now on the canvas.
-  loadedFromCache = false;
+}
+
+// Whether the browser can encode WebP from a canvas (detected once). WebP is
+// ~30% smaller than JPEG at the same quality, so the cache stays crisp for
+// longer before the localStorage quota forces the quality down.
+let webpSupported: boolean = null;
+function cacheMimeType(canvas: HTMLCanvasElement): string {
+  if (webpSupported === null) {
+    // Unsupported browsers silently fall back to PNG, so check the prefix.
+    webpSupported = canvas.toDataURL("image/webp").startsWith("data:image/webp");
+  }
+  return webpSupported ? "image/webp" : "image/jpeg";
 }
 
 /**
@@ -223,7 +230,7 @@ function updateStateAndUI(date: Date, imageType: ImageType) {
 function storeCanvas(date: Date, imageType: ImageType, quality = IMAGE_QUALITY) {
   // put date and image data in cache
   const canvas = document.getElementById("output") as HTMLCanvasElement;
-  const imageData = canvas.toDataURL("image/jpeg", quality);
+  const imageData = canvas.toDataURL(cacheMimeType(canvas), quality);
   try {
     localStorage.setItem(IMAGE_DATA_KEY, imageData);
   } catch {
@@ -240,7 +247,7 @@ function storeCanvas(date: Date, imageType: ImageType, quality = IMAGE_QUALITY) 
 
 function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageType) {
   // no need to set images if we have up to date images and the image type has not changed
-  if (!loadedFromCache && loadedDate && latest.date.getTime() === loadedDate.getTime() && loadedType === imageType) {
+  if (loadedDate && latest.date.getTime() === loadedDate.getTime() && loadedType === imageType) {
     return;
   }
 
@@ -284,7 +291,7 @@ function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageTyp
 
 function setSliderImages(date: Date, sat: SliderSat, imageType: ImageType) {
   // no need to set images if we have up to date images and the type has not changed
-  if (!loadedFromCache && loadedDate && date.getTime() === loadedDate.getTime() && loadedType === imageType) {
+  if (loadedDate && date.getTime() === loadedDate.getTime() && loadedType === imageType) {
     return;
   }
 
@@ -347,6 +354,44 @@ function getSatelliteFromURL(): ImageType {
   return HIMAWARI_9;
 }
 
+/** Reverse of getSatelliteFromURL: the ?satellite= key for an image type. */
+function imageTypeToParam(imageType: ImageType): string {
+  if (imageType === DSCOVR_EPIC) { return "epic"; }
+  if (imageType === DSCOVR_EPIC_ENHANCED) { return "epic-enhanced"; }
+  return SLIDER_SATS[imageType] ? SLIDER_SATS[imageType].urlParam : "himawari";
+}
+
+/**
+ * Populate and wire up the website-only satellite dropdown. Selecting a satellite
+ * updates the ?satellite= URL (so the view is shareable) and loads the new image.
+ */
+function setupSatelliteDropdown() {
+  const select = document.getElementById("satellite") as HTMLSelectElement;
+  if (!select) { return; }
+
+  const choices: {param: string; label: string}[] = [
+    ...Object.keys(SLIDER_SATS).map(key => ({ param: SLIDER_SATS[key].urlParam, label: SLIDER_SATS[key].title })),
+    { param: "epic", label: "DSCOVR EPIC" },
+    { param: "epic-enhanced", label: "DSCOVR EPIC Enhanced" },
+  ];
+
+  for (const choice of choices) {
+    const option = document.createElement("option");
+    option.value = choice.param;
+    option.textContent = choice.label;
+    select.appendChild(option);
+  }
+
+  select.value = imageTypeToParam(getSatelliteFromURL());
+
+  select.addEventListener("change", () => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("satellite", select.value);
+    history.replaceState(null, "", url.toString());
+    setLatestImage();
+  });
+}
+
 /* Load latest image(s) date and images for that date */
 async function setLatestImage() {
   if (!navigator.onLine) {
@@ -386,9 +431,6 @@ function setCachedImage() {
     ctx.drawImage(img, 0, 0);
 
     updateStateAndUI(date, localStorage.getItem(CACHED_IMAGE_TYPE_KEY) as ImageType);
-    // Mark that we are only showing the lossy cache so setLatestImage re-renders
-    // from crisp PNG tiles even when the latest timestamp is unchanged.
-    loadedFromCache = true;
   };
   img.src = localStorage.getItem(IMAGE_DATA_KEY);
 }
@@ -418,6 +460,7 @@ if (isExtension) {
     init();
   });
 } else {
+  setupSatelliteDropdown();
   init();
 }
 

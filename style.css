@@ -88,6 +88,27 @@ abbr {
   display: initial;
 }
 
+/* Website-only satellite picker (hidden in the extension, which uses its options page) */
+.extension .website-only {
+  display: none;
+}
+
+#satellite {
+  font-family: 'Roboto Slab', serif;
+  font-size: 14px;
+  color: white;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  padding: 2px 4px;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
+#satellite option {
+  color: black;
+}
+
 /* Optional animation */
 .animated #output {
   animation: fadein .6s ease;

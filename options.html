@@ -40,37 +40,28 @@
   <div>
     <label for="image">Image type:</label>
     <select id="image">
-      <option value="D531106">Himawari 8 Visible Light</option>
-      <option value="INFRARED_FULL">Himawari 8 Infrared</option>
-      <option value="HIMAWARI_9">Himawari 9</option>
+      <option value="HIMAWARI_9">Himawari-9 (140.7°E)</option>
+      <option value="GOES_EAST">GOES-East (75.2°W)</option>
+      <option value="GOES_WEST">GOES-West (137°W)</option>
+      <option value="METEOSAT">Meteosat 0°</option>
+      <option value="METEOSAT_IODC">Meteosat IODC (45.5°E)</option>
+      <option value="MTG">Meteosat-12 / MTG (0°)</option>
+      <option value="GK2A">GK2A (128°E)</option>
       <option value="EPIC">DSCOVR EPIC</option>
       <option value="EPIC_ENHANCED">DSCOVR EPIC Enhanced</option>
-      <option value="GOES_16">GOES 16 (East)</option>
-      <option value="GOES_16_NATURAL">GOES 16 (East) Natural</option>
-      <option value="GOES_18">GOES 18 (West)</option>
-      <option value="GOES_18_NATURAL">GOES 18 (West) Natural</option>
-      <option value="GOES_19">GOES 19 (Central)</option>
-      <option value="GOES_19_NATURAL">GOES 19 (Central) Natural</option>
-      <option value="METEOSAT">Meteosat Prime Natural Colour</option>
-      <option value="METEOSAT_IODC">Meteosat IODC Natural Colour</option>
     </select>
     <div class="desc">
       <p>
-        The <a href="https://en.wikipedia.org/wiki/Himawari_(satellites)">Japanese Himawari Satellites</a>
-        take images of different parts of the spectrum.
+        Geostationary satellites — <a href="https://en.wikipedia.org/wiki/Himawari_(satellites)">Himawari-9</a> (Asia/Pacific),
+        <a href="https://en.wikipedia.org/wiki/Geostationary_Operational_Environmental_Satellite">GOES-East/West</a> (Americas/Pacific),
+        <a href="https://www.eumetsat.int/meteosat-second-generation">Meteosat</a> (Europe/Africa, 0° and Indian Ocean),
+        <a href="https://www.eumetsat.int/meteosat-third-generation">MTG</a>, and
+        <a href="https://en.wikipedia.org/wiki/GEO-KOMPSAT-2">GK2A</a> (Korea) —
+        shown as clean GeoColor full-disk imagery (true color by day, infrared at night)
+        via <a href="https://rammb-slider.cira.colostate.edu/">CIRA SLIDER</a>.
       </p><p>
-        You can also choose images from the NASA's
-        <a href="https://en.wikipedia.org/wiki/Deep_Space_Climate_Observatory#EPIC">EPIC camera on board of the DSCOVR satellite</a>.
-        This satellite always faces the sunlit side of the Earth.
-      </p><p>
-        The <a href="https://en.wikipedia.org/wiki/Geostationary_Operational_Environmental_Satellite">NOAA GOES</a> satellites are geostationary
-        like Himawari but show the pacific (GOES West) and the Americas (GOES East).
-      </p>
-      </p><p>
-        The <a href="https://www.eumetsat.int/website/home/Satellites/CurrentSatellites/Meteosat/index.html">Meteosat</a>
-        satellites are geostationary as well, but the Meteosat Prime satellite
-        is centered at 0°E, while the Indian Ocean Data Coverage (IODC) is
-        centered at 41.5°E41.5°E41.5°E41.5°E.
+        <a href="https://en.wikipedia.org/wiki/Deep_Space_Climate_Observatory#EPIC">DSCOVR EPIC</a>
+        shows the whole sunlit Earth from ~1.5 million km away.
       </p>
     </div>
 
@@ -86,11 +77,11 @@
 
   <p>
     <small>
-      Image credit:
-        Japan Meteorological Agency (JMA),
-        National Aeronautics and Space Administration (NASA),
-        National Oceanic and Atmospheric Adminstration (NOAA),
-        <span id="year"></span> European Organisation for the Exploitation of Meteorological Satellites (EUMETSAT).
+      Imagery: NOAA / CIRA / RAMMB SLIDER,
+      Japan Meteorological Agency (JMA),
+      National Aeronautics and Space Administration (NASA),
+      Korea Meteorological Administration (KMA).
+      Meteosat imagery contains modified <span id="year"></span> EUMETSAT data.
     </small>
   </p>
 

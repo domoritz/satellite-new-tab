@@ -20,7 +20,7 @@ function saveOptions() {
 // Restores select box and checkbox state using the preferences
 // stored in chrome.storage.
 function restoreOptions() {
-  const query = { imageType: "D531106", animated: false };
+  const query = { imageType: "HIMAWARI_9", animated: false };
 
   function callback(options) {
     document.getElementById("image").value = options.imageType;

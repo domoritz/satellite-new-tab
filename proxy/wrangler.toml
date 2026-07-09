@@ -1,0 +1,6 @@
+name = "slider-proxy"
+main = "src/worker.ts"
+compatibility_date = "2026-07-01"
+
+# Deployed as https://slider-proxy.domoritz.workers.dev
+workers_dev = true

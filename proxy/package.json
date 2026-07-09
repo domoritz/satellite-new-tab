@@ -1,0 +1,14 @@
+{
+  "name": "slider-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CORS pass-through proxy for CIRA SLIDER imagery.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.0.0",
+    "wrangler": "^4.0.0"
+  }
+}

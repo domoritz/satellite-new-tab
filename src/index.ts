@@ -1,52 +1,60 @@
 import { utcFormat, utcParse } from "d3-time-format";
 
-// base url for images
-const HIMAWARI_BASE_URL = "https://himawari8-dl.nict.go.jp/himawari.asia/img/";
+// base urls
 const DSCOVR_BASE_URL = "https://epic.gsfc.nasa.gov/";
-
-const SLIDER_BASE_URL = "https://rammb-slider.cira.colostate.edu/data/";
+const SLIDER_BASE_URL = "https://slider.cira.colostate.edu/data/";
 
 // links to online image explorers
-const HIMAWARI_EXPLORER = "https://himawari8.nict.go.jp/himawari8-image.htm?sI=D531106";
 const DSCOVR_EXPLORER = "https://epic.gsfc.nasa.gov";
 const DSCOVR_EXPLORER_ENHANCED = DSCOVR_EXPLORER + "/enhanced";
 const SLIDER_EXPLORER = "https://rammb-slider.cira.colostate.edu/";
-const METEOSAT_EXPLORER = "https://eumetview.eumetsat.int/static-images/";
 
 // image types
-const INFRARED = "INFRARED_FULL";
-const VISIBLE_LIGHT = "D531106";
 const DSCOVR_EPIC = "EPIC";
 const DSCOVR_EPIC_ENHANCED = "EPIC_ENHANCED";
-const GOES_16 = "GOES_16";
-const GOES_16_NATURAL = "GOES_16_NATURAL";
-const GOES_18 = "GOES_18";
-const GOES_18_NATURAL = "GOES_18_NATURAL";
-const GOES_19 = "GOES_19";
-const GOES_19_NATURAL = "GOES_19_NATURAL";
+const HIMAWARI_9 = "HIMAWARI_9";
+const GOES_EAST = "GOES_EAST";
+const GOES_WEST = "GOES_WEST";
 const METEOSAT = "METEOSAT";
 const METEOSAT_IODC = "METEOSAT_IODC";
-const HIMAWARI_9 = "HIMAWARI_9";
+const MTG = "MTG";
+const GK2A = "GK2A";
 
-type ImageType = typeof INFRARED | typeof VISIBLE_LIGHT | typeof DSCOVR_EPIC |
-  typeof DSCOVR_EPIC_ENHANCED |
-  typeof GOES_16 | typeof GOES_16_NATURAL | typeof GOES_18 | typeof GOES_18_NATURAL | typeof GOES_19 | typeof GOES_19_NATURAL |
-  typeof METEOSAT | typeof METEOSAT_IODC |
-  typeof HIMAWARI_9;
+type ImageType =
+  | typeof DSCOVR_EPIC | typeof DSCOVR_EPIC_ENHANCED
+  | typeof HIMAWARI_9 | typeof GOES_EAST | typeof GOES_WEST
+  | typeof METEOSAT | typeof METEOSAT_IODC | typeof MTG | typeof GK2A;
 
-const HIMAWARI_WIDTH = 550;
-const HIMAWARI_BLOCK_SIZES = [1, 4, 8, 16, 20];
+// Per-satellite SLIDER config. tileSize and maxLevel come from SLIDER's catalog
+// (https://slider.cira.colostate.edu/js/define-products---rammb-slider.js):
+//   tileSize = sectors.full_disk.tile_size
+//   maxLevel = sectors.full_disk.max_zoom_level − products.geocolor.zoom_level_adjust
+// Regenerate if CIRA adds/removes satellites. Product is always "geocolor" (clean
+// imagery — no gridlines/borders; those are separate overlay layers we never fetch).
+interface SliderSat {
+  path: string;      // SLIDER satellite id used in URLs
+  tileSize: number;  // native pixel size of one tile
+  maxLevel: number;  // highest usable geocolor zoom level
+  title: string;
+  urlParam: string;  // website ?satellite= key
+}
 
-const SLIDER_WIDTH = 678;
-const SLIDER_BLOCK_SIZES = [1, 2, 4, 8, 16];
+const SLIDER_SATS: Record<string, SliderSat> = {
+  [HIMAWARI_9]:    { path: "himawari",      tileSize: 688, maxLevel: 4, title: "Himawari-9",        urlParam: "himawari" },
+  [GOES_EAST]:     { path: "goes-19",       tileSize: 678, maxLevel: 4, title: "GOES-East",         urlParam: "goes-east" },
+  [GOES_WEST]:     { path: "goes-18",       tileSize: 678, maxLevel: 4, title: "GOES-West",         urlParam: "goes-west" },
+  [METEOSAT]:      { path: "meteosat-0deg", tileSize: 464, maxLevel: 3, title: "Meteosat 0°",       urlParam: "meteosat" },
+  [METEOSAT_IODC]: { path: "meteosat-9",    tileSize: 464, maxLevel: 3, title: "Meteosat IODC",     urlParam: "meteosat-iodc" },
+  [MTG]:           { path: "meteosat-12",   tileSize: 696, maxLevel: 4, title: "Meteosat-12 (MTG)", urlParam: "mtg" },
+  [GK2A]:          { path: "gk2a",          tileSize: 688, maxLevel: 4, title: "GK2A",              urlParam: "gk2a" },
+};
+
+const SLIDER_BLOCK_SIZES = [1, 2, 4, 8, 16];  // tiles per axis at levels 0..4
 
 const DSCOVR_WIDTH = 2048;
 
-const METEOSAT_WIDTH = 3712;
-const METEOSAT_HEIGHT = 3630;  // cut off white bar, credit in options
-
 const IMAGE_QUALITY = 0.95;
-const RELOAD_INTERVAL = 1 * 60 * 1000;  // 1 minutes
+const RELOAD_INTERVAL = 1 * 60 * 1000;  // 1 minute
 const RELOAD_TIME_INTERVAL = 10 * 1000;  // 10 seconds
 
 // local storage keys
@@ -61,7 +69,7 @@ const isExtension = window['browser'] && !!browser.storage;
 
 const DEFAULT_OPTIONS: {animated: boolean; imageType: ImageType} = {
   animated: false,
-  imageType: VISIBLE_LIGHT,
+  imageType: HIMAWARI_9,
 };
 
 interface Tile {
@@ -81,109 +89,21 @@ function pad(num: string | number, size: number) {
   return s;
 }
 
-/**
- * Returns an array of objects containing URLs and metadata
- * for Himawari 8 image tiles based on a given date.
- * Options:
- * - date: Date object
- * - type: boolean (default: visible light)
- * - blocks: alternative to zoom, how many images per row/column (default: 1)
- *      Has to be a valid block number (1, 4, 8, 16, 20)
- *
- * @param  {Object}       options
- */
-function himawariURLs(options: {date: Date; type?: ImageType; blocks: number}) {
-  const baseURL = HIMAWARI_BASE_URL + (options.type || VISIBLE_LIGHT);
-  const date = options.date;
+function sliderURLs(sat: SliderSat, date: Date, blocks: number, level: number) {
+  const formattedDate = utcFormat("%Y/%m/%d")(date);
+  const formattedDateTime = utcFormat("%Y%m%d%H%M%S")(date);
 
-  // Define some image parameters
-  const blocks = options.blocks;
-
-  // compose URL
-  const tilesURL = `${baseURL}/${blocks}d/${HIMAWARI_WIDTH}/${utcFormat("%Y/%m/%d/%H%M%S")(date)}`;
-  const tiles: Tile[] = [];
-
-  for (let y = 0; y < blocks; y++) {
-    for (let x = 0; x < blocks; x++) {
-      const url = `${tilesURL}_${x}_${y}.png`;
-
-      tiles.push({
-        url,
-        x,
-        y,
-      });
-    }
-  }
-
-  return {
-    blocks,
-    date,
-    tiles,
-  };
-}
-
-function sliderURLs(options: {date: Date; type: ImageType; blocks: number; level: number}) {
-  const date = options.date;
-
-  const blocks = options.blocks;
-  const level = options.level;
-
-  const typePath = {
-    GOES_16: "geocolor",
-    GOES_16_NATURAL: "natural_color",
-    GOES_18: "geocolor",
-    GOES_18_NATURAL: "natural_color",
-    GOES_19: "geocolor",
-    GOES_19_NATURAL: "natural_color",
-    HIMAWARI_9: "geocolor",
-  }[options.type];
-
-  const which = {
-    GOES_16: "goes-16",
-    GOES_16_NATURAL: "goes-16",
-    GOES_18: "goes-17",
-    GOES_18_NATURAL: "goes-17",
-    GOES_19: "goes-19",
-    GOES_19_NATURAL: "goes-19",
-    HIMAWARI_9: "himawari",
-  }[options.type];
-
-  const formattedDate = utcFormat("%Y/%m/%d")(options.date);
-  const formattedDateTime = utcFormat("%Y%m%d%H%M%S")(options.date);
-
-  const tilesURL = `${SLIDER_BASE_URL}imagery/${formattedDate}/${which}---full_disk/${typePath}/${formattedDateTime}/`;
+  const tilesURL = `${SLIDER_BASE_URL}imagery/${formattedDate}/${sat.path}---full_disk/geocolor/${formattedDateTime}/`;
   const tiles: Tile[] = [];
 
   for (let y = 0; y < blocks; y++) {
     for (let x = 0; x < blocks; x++) {
       const url = `${tilesURL}${pad(level, 2)}/${pad(y, 3)}_${pad(x, 3)}.png`;
-
-      tiles.push({
-        url,
-        x,
-        y,
-      });
+      tiles.push({ url, x, y });
     }
   }
 
-  return {
-    blocks,
-    date,
-    tiles,
-  };
-}
-
-/**
- * Get the date of the latest Himawari image by making an Ajax request.
- * @param   {string}  imageType  The type of image
- * @returns {date}  The parsed date
- */
-async function getLatestHimawariDate(imageType: ImageType) {
-  const raw = await fetch(`https://himawari-8.appspot.com/latest${imageType === INFRARED ? "?infrared=true" : ""}`);
-  const data: {date: string} = await raw.json();
-
-  const latest = data.date;
-  return utcParse("%Y-%m-%d %H:%M:%S")(latest)
+  return { blocks, date, tiles };
 }
 
 async function getLatestDscovrDate(imageType: ImageType) {
@@ -206,31 +126,12 @@ function sliderProxy(url: string) {
   return `https://slider-proxy.domoritz.workers.dev/?${encodeURIComponent(url)}`;
 }
 
-async function getLatestSliderDate(imageType: ImageType) {
-  const which = {
-    GOES_16: "goes-16",
-    GOES_16_NATURAL: "goes-16",
-    GOES_18: "goes-17",
-    GOES_18_NATURAL: "goes-17",
-    GOES_19: "goes-19",
-    GOES_19_NATURAL: "goes-19",
-    HIMAWARI_9: "himawari",
-  }[imageType];
+async function getLatestSliderDate(sat: SliderSat) {
+  const raw = await fetch(sliderProxy(`${SLIDER_BASE_URL}json/${sat.path}/full_disk/geocolor/latest_times.json`));
+  const data: { timestamps_int: number[] } = await raw.json();
 
-  const raw = await fetch(sliderProxy(`${SLIDER_BASE_URL}json/${which}/full_disk/geocolor/latest_times.json`));
-  const data: {timestamps_int: string[]} = await raw.json();
-
-  return utcParse("%Y%m%d%H%M%S")(data.timestamps_int[0]);
-}
-
-async function getLatestMeteosatDate(imageType: ImageType) {
-  const raw = await fetch(`https://meteosat-url.appspot.com/msg${imageType === METEOSAT_IODC ? "iodc" : ""}`);
-  const data: {url: string; date: string} = await raw.json();
-
-  return {
-    date: utcParse("%Y-%m-%d %H:%M:%S")(data.date),
-    image: data.url,
-  }
+  // timestamps_int are integers, newest first; stringify for parsing.
+  return utcParse("%Y%m%d%H%M%S")(String(data.timestamps_int[0]));
 }
 
 /**
@@ -291,39 +192,16 @@ function updateTimeAgo(date: Date) {
 }
 
 /*
- * Set the right class on the body so that we can have different css.
+ * Set the right class on the body so that we can size the canvas via CSS.
  */
 function setBodyClass(imageType: ImageType) {
-  document.body.classList.remove("himawari");
+  document.body.classList.remove("slider");
   document.body.classList.remove("dscovr");
-  document.body.classList.remove("goes");
-  document.body.classList.remove("goes16");
-  document.body.classList.remove("meteosat");
 
-  switch (imageType) {
-    case INFRARED:
-    case VISIBLE_LIGHT:
-    case HIMAWARI_9:
-      document.body.classList.add("himawari");
-      break;
-    case DSCOVR_EPIC:
-    case DSCOVR_EPIC_ENHANCED:
-      document.body.classList.add("dscovr");
-      break;
-    case GOES_16:
-    case GOES_16_NATURAL:
-    case GOES_18:
-    case GOES_18_NATURAL:
-    case GOES_19:
-    case GOES_19_NATURAL:
-      document.body.classList.add("goes");
-      break;
-    case METEOSAT:
-    case METEOSAT_IODC:
-      document.body.classList.add("meteosat");
-      break;
-    default:
-      console.warn("Unknown image type", imageType);
+  if (imageType === DSCOVR_EPIC || imageType === DSCOVR_EPIC_ENHANCED) {
+    document.body.classList.add("dscovr");
+  } else {
+    document.body.classList.add("slider");
   }
 }
 
@@ -353,71 +231,6 @@ function storeCanvas(date: Date, imageType: ImageType, quality = IMAGE_QUALITY) 
   }
   localStorage.setItem(CACHED_DATE_KEY, date.toString());
   localStorage.setItem(CACHED_IMAGE_TYPE_KEY, imageType);
-}
-
-/**
- * Creates an image composed of tiles.
- * @param {Date object} date  The date for which to load the data.
- */
-function setHimawariImages(date: Date, imageType: ImageType) {
-  // no need to set images if we have up to date images and the image type has not changed
-  if (loadedDate && date.getTime() === loadedDate.getTime() && loadedType === imageType) {
-    return;
-  }
-
-  // if we haven't loaded images before, we want to show progress
-  const initialLoad = !localStorage.getItem(CACHED_DATE_KEY);
-
-  // immediately set the type and body class because we are not loading in the background
-  if (initialLoad) {
-    updateStateAndUI(date, imageType);
-  }
-
-  // get the URLs for all tiles
-  const result = himawariURLs({
-    blocks: getOptimalNumberOfBlocks(HIMAWARI_WIDTH, HIMAWARI_BLOCK_SIZES).blocks,
-    date,
-    type: imageType,
-  });
-
-  const pixels = result.blocks * HIMAWARI_WIDTH;
-
-  const canvas = initialLoad ? document.getElementById("output") as HTMLCanvasElement : document.createElement("canvas");
-  const ctx = canvas.getContext("2d")!;
-  ctx.canvas.width = pixels;
-  ctx.canvas.height = pixels;
-
-  // add image to canvas
-  function addImage(tile: Tile) {
-    return new Promise<void>((resolve) => {
-      const img = new Image();
-      img.setAttribute("crossOrigin", "anonymous");
-      img.onload = () => {
-        ctx.drawImage(img, tile.x * HIMAWARI_WIDTH, tile.y * HIMAWARI_WIDTH, HIMAWARI_WIDTH, HIMAWARI_WIDTH);
-        resolve();
-      };
-      img.src = tile.url;
-    });
-  }
-
-  Promise.all(result.tiles.map(tile => addImage(tile)))
-    .catch(error => {
-      throw error;
-    })
-    .then(() => {
-      if (!initialLoad) {
-        // copy canvas into output in one step
-        const output = document.getElementById("output") as HTMLCanvasElement;
-        const outCtx = output.getContext("2d");
-        outCtx.canvas.width = pixels;
-        outCtx.canvas.height = pixels;
-        outCtx.drawImage(canvas, 0, 0);
-      }
-
-      updateStateAndUI(date, imageType);
-
-      storeCanvas(date, imageType);
-    });
 }
 
 function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageType) {
@@ -464,8 +277,8 @@ function setDscovrImage(latest: {date: Date; image: string}, imageType: ImageTyp
   img.src = `${DSCOVR_BASE_URL}archive/${type}/${latest.date.getFullYear()}/${month}/${date}/png/${latest.image}.png`;
 }
 
-function setSliderImages(date: Date, imageType: ImageType) {
-  // no need to set images if we have up to date images and the image type has not changed
+function setSliderImages(date: Date, sat: SliderSat, imageType: ImageType) {
+  // no need to set images if we have up to date images and the type has not changed
   if (loadedDate && date.getTime() === loadedDate.getTime() && loadedType === imageType) {
     return;
   }
@@ -473,32 +286,28 @@ function setSliderImages(date: Date, imageType: ImageType) {
   // if we haven't loaded images before, we want to show progress
   const initialLoad = !localStorage.getItem(CACHED_DATE_KEY);
 
-  // immediately set the type and body class because we are not loading in the background
   if (initialLoad) {
     updateStateAndUI(date, imageType);
   }
 
-  // get the URLs for all tiles
-  const result = sliderURLs({
-    date,
-    type: imageType,
-    ...getOptimalNumberOfBlocks(SLIDER_WIDTH, SLIDER_BLOCK_SIZES),
-  });
+  // clamp zoom to what this satellite's geocolor product actually has
+  const sizes = SLIDER_BLOCK_SIZES.slice(0, sat.maxLevel + 1);
+  const { blocks, level } = getOptimalNumberOfBlocks(sat.tileSize, sizes);
+  const result = sliderURLs(sat, date, blocks, level);
 
-  const pixels = result.blocks * SLIDER_WIDTH;
+  const pixels = result.blocks * sat.tileSize;
 
   const canvas = initialLoad ? document.getElementById("output") as HTMLCanvasElement : document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
   ctx.canvas.width = pixels;
   ctx.canvas.height = pixels;
 
-  // add image to canvas
   function addImage(tile: Tile) {
     return new Promise<void>((resolve) => {
       const img = new Image();
       img.setAttribute("crossOrigin", "anonymous");
       img.onload = () => {
-        ctx.drawImage(img, tile.x * SLIDER_WIDTH, tile.y * SLIDER_WIDTH, SLIDER_WIDTH, SLIDER_WIDTH);
+        ctx.drawImage(img, tile.x * sat.tileSize, tile.y * sat.tileSize, sat.tileSize, sat.tileSize);
         resolve();
       };
       img.src = sliderProxy(tile.url);
@@ -506,108 +315,57 @@ function setSliderImages(date: Date, imageType: ImageType) {
   }
 
   Promise.all(result.tiles.map(tile => addImage(tile)))
-    .catch(error => {
-      throw error;
-    })
+    .catch(error => { throw error; })
     .then(() => {
       if (!initialLoad) {
-        // copy canvas into output in one step
         const output = document.getElementById("output") as HTMLCanvasElement;
         const outCtx = output.getContext("2d");
         outCtx.canvas.width = pixels;
         outCtx.canvas.height = pixels;
         outCtx.drawImage(canvas, 0, 0);
       }
-
       updateStateAndUI(date, imageType);
-
       storeCanvas(date, imageType);
     });
 }
 
-function setMeteosatImages(latest: {date: Date; image: string}, imageType: ImageType) {
-  // no need to set images if we have up to date images and the image type has not changed
-  if (loadedDate && latest.date.getTime() === loadedDate.getTime() && loadedType === imageType) {
-    return;
-  }
-
-  // if we haven't loaded images before, we want to show progress
-  const initialLoad = !localStorage.getItem(CACHED_DATE_KEY);
-
-  // immediately set the type and body class because we are not loading in the background
-  if (initialLoad) {
-    updateStateAndUI(latest.date, imageType);
-  }
-
-  const canvas = initialLoad ? document.getElementById("output") as HTMLCanvasElement : document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  ctx.canvas.width = METEOSAT_WIDTH;
-  ctx.canvas.height = METEOSAT_HEIGHT;
-
-  const img = new Image();
-  img.setAttribute("crossOrigin", "anonymous");
-  img.onload = () => {
-    ctx.drawImage(img, 0, 0);
-
-    if (!initialLoad) {
-      // copy canvas into output in one step
-      const output = document.getElementById("output") as HTMLCanvasElement;
-      const outCtx = output.getContext("2d");
-      outCtx.canvas.width = METEOSAT_WIDTH;
-      outCtx.canvas.height = METEOSAT_HEIGHT;
-      outCtx.drawImage(canvas, 0, 0);
+/** Resolve the satellite for the website from the ?satellite= URL param. */
+function getSatelliteFromURL(): ImageType {
+  const param = new URLSearchParams(window.location.search).get("satellite");
+  if (param) {
+    if (param === "epic") { return DSCOVR_EPIC; }
+    if (param === "epic-enhanced") { return DSCOVR_EPIC_ENHANCED; }
+    for (const key of Object.keys(SLIDER_SATS)) {
+      if (SLIDER_SATS[key].urlParam === param) { return key as ImageType; }
     }
-
-    updateStateAndUI(latest.date, imageType);
-
-    storeCanvas(latest.date, imageType);
-  };
-
-  img.src = latest.image;
+  }
+  return HIMAWARI_9;
 }
 
 /* Load latest image(s) date and images for that date */
 async function setLatestImage() {
   if (!navigator.onLine) {
-    // browser is offline, no need to do this
     return;
   }
 
+  let imageType: ImageType;
   if (isExtension) {
     document.title = "New Tab";
-
-    const {imageType} = await browser.storage.sync.get(DEFAULT_OPTIONS)
-
-    switch (imageType) {
-      case DSCOVR_EPIC:
-      case DSCOVR_EPIC_ENHANCED:
-        setDscovrImage(await getLatestDscovrDate(imageType), imageType);
-        break;
-      case GOES_16:
-      case GOES_16_NATURAL:
-      case GOES_18:
-      case GOES_18_NATURAL:
-      case GOES_19:
-      case GOES_19_NATURAL:
-        setSliderImages(await getLatestSliderDate(imageType), imageType);
-        break;
-      case METEOSAT:
-      case METEOSAT_IODC:
-        setMeteosatImages(await getLatestMeteosatDate(imageType), imageType)
-        break;
-      case INFRARED:
-      case VISIBLE_LIGHT:
-        setHimawariImages(await getLatestHimawariDate(imageType), imageType)
-        break;
-      case HIMAWARI_9:
-      default:
-        setSliderImages(await getLatestSliderDate(imageType), imageType)
-        break;
-    }
+    const options = await browser.storage.sync.get(DEFAULT_OPTIONS);
+    imageType = options.imageType;
   } else {
-    // if we are not in the extension, let's always load visible light
-    setSliderImages(await getLatestSliderDate(HIMAWARI_9), HIMAWARI_9)
+    imageType = getSatelliteFromURL();
   }
+
+  if (imageType === DSCOVR_EPIC || imageType === DSCOVR_EPIC_ENHANCED) {
+    setDscovrImage(await getLatestDscovrDate(imageType), imageType);
+    return;
+  }
+
+  // Any SLIDER satellite (falls back to Himawari-9 for unknown/legacy stored values).
+  const sat = SLIDER_SATS[imageType] || SLIDER_SATS[HIMAWARI_9];
+  const resolvedType = SLIDER_SATS[imageType] ? imageType : HIMAWARI_9;
+  setSliderImages(await getLatestSliderDate(sat), sat, resolvedType);
 }
 
 /** Load image from local storage */
@@ -681,25 +439,9 @@ document.getElementById("explore").addEventListener("click", () => {
     case DSCOVR_EPIC_ENHANCED:
       window.open(DSCOVR_EXPLORER_ENHANCED, "_self");
       break;
-    case GOES_16:
-    case GOES_16_NATURAL:
-    case GOES_18:
-    case GOES_18_NATURAL:
-    case GOES_19:
-    case GOES_19_NATURAL:
-    case HIMAWARI_9:
-      window.open(SLIDER_EXPLORER, "_self");
-      break;
-    case INFRARED:
-    case VISIBLE_LIGHT:
-      window.open(HIMAWARI_EXPLORER, "_self");
-      break;
-    case METEOSAT:
-    case METEOSAT_IODC:
-      window.open(METEOSAT_EXPLORER, "_self");
-      break;
     default:
-      window.alert("No explorer found.");
+      // all SLIDER satellites
+      window.open(SLIDER_EXPLORER, "_self");
       break;
   }
 });

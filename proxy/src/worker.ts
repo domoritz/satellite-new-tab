@@ -36,7 +36,12 @@ export default {
 
     const requestUrl = new URL(request.url);
     // Everything after the leading "?" is the (url-encoded) target URL.
-    const target = decodeURIComponent(requestUrl.search.slice(1));
+    let target: string;
+    try {
+      target = decodeURIComponent(requestUrl.search.slice(1));
+    } catch {
+      return withCors("Invalid URL encoding", { status: 400 });
+    }
     if (!target) {
       return withCors("Usage: /?<url-encoded slider URL>", { status: 400 });
     }
@@ -56,6 +61,7 @@ export default {
     const isJson = targetUrl.pathname.endsWith(".json");
     const cacheTtl = isJson ? 60 : 604800;
 
+    // Redirects are followed; acceptable because only allowlisted SLIDER hosts reach here.
     const upstream = await fetch(targetUrl.toString(), {
       cf: { cacheEverything: true, cacheTtl },
     });

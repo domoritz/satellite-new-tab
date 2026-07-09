@@ -88,7 +88,7 @@ Imagery credit: NOAA / CIRA / RAMMB SLIDER, JMA, NASA, KMA. Meteosat imagery con
 ## Changelog
 
 ```
-0.24.0 (next) Consolidate the proxies into a single Cloudflare Worker; serve all imagery from CIRA SLIDER (GeoColor). Add website satellite switching via ?satellite=. Add GOES-East/West, Meteosat IODC, MTG, and GK2A. Switch the build to Vite and the package manager to npm; deploy the site via GitHub Actions. Remove the native Himawari (visible/infrared) feeds and the AppEngine proxies.
+0.24.0 Consolidate the proxies into a single Cloudflare Worker; serve all imagery from CIRA SLIDER (GeoColor). Add website satellite switching via ?satellite=. Add GOES-East/West, Meteosat IODC, MTG, and GK2A. Switch the build to Vite and the package manager to npm; deploy the site via GitHub Actions. Remove the native Himawari (visible/infrared) feeds and the AppEngine proxies.
 0.23.0 Update URLs.
 0.22.0 Update to new proxy, add GOES 19 and Himawari 9.
 0.21.0 Update RAMMB URL format. Move to manifest v3 for Chrome.
